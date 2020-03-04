@@ -4,15 +4,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 
-import javax.swing.JDesktopPane;
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
 
 import log.Logger;
 
@@ -134,9 +126,20 @@ public class MainApplicationFrame extends JFrame
             });
             testMenu.add(addLogMessageItem);
         }
-
+        JMenuItem exitButton = new JMenuItem("Закрыть приложение");
+        UIManager.put("OptionPane.yesButtonText" , "Да" );
+        UIManager.put("OptionPane.noButtonText" , "Нет" );
+        exitButton.addActionListener((event) -> {
+            int reply = JOptionPane.showConfirmDialog(null,
+                    "Вы действительно закрыть приложение?", "Закрыть", JOptionPane.YES_NO_OPTION);
+            if (reply == JOptionPane.YES_OPTION)
+                System.exit(0);
+        });
+        JMenu exitMenu = new JMenu("Закрыть приложение");
+        exitMenu.add(exitButton);
         menuBar.add(lookAndFeelMenu);
         menuBar.add(testMenu);
+        menuBar.add(exitMenu);
         return menuBar;
     }
     
