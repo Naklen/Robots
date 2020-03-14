@@ -2,7 +2,7 @@ package gui;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
 import javax.swing.*;
 
@@ -38,7 +38,13 @@ public class MainApplicationFrame extends JFrame
         addWindow(gameWindow);
 
         setJMenuBar(generateMenuBar());
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                closeWindow();
+            }
+        });
     }
     
     protected LogWindow createLogWindow()
@@ -129,11 +135,11 @@ public class MainApplicationFrame extends JFrame
         JMenuItem exitButton = new JMenuItem("Закрыть приложение");
         UIManager.put("OptionPane.yesButtonText" , "Да" );
         UIManager.put("OptionPane.noButtonText" , "Нет" );
-        exitButton.addActionListener((event) -> {
-            int reply = JOptionPane.showConfirmDialog(null,
-                    "Вы действительно закрыть приложение?", "Закрыть", JOptionPane.YES_NO_OPTION);
-            if (reply == JOptionPane.YES_OPTION)
-                System.exit(0);
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                closeWindow();
+            }
         });
         JMenu exitMenu = new JMenu("Закрыть приложение");
         exitMenu.add(exitButton);
@@ -141,6 +147,13 @@ public class MainApplicationFrame extends JFrame
         menuBar.add(testMenu);
         menuBar.add(exitMenu);
         return menuBar;
+    }
+
+    private void closeWindow() {
+        int reply = JOptionPane.showConfirmDialog(null,
+                "Вы действительно закрыть приложение?", "Закрыть", JOptionPane.YES_NO_OPTION);
+        if (reply == JOptionPane.YES_OPTION)
+            System.exit(0);
     }
     
     private void setLookAndFeel(String className)
