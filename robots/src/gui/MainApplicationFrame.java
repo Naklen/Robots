@@ -29,23 +29,7 @@ public class MainApplicationFrame extends JFrame
             screenSize.width  - inset*2,
             screenSize.height - inset*2);
 
-        if (file.exists()) {
-            try (ObjectInputStream stream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-                settings = (Settings) stream.readObject();
-            }
-            catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
-        }
-        else settings = getMainFrameSettings();
         setContentPane(desktopPane);
-
-        if(settings.isIconified())
-            setExtendedState(ICONIFIED);
-        else if (settings.isMaximized())
-            setExtendedState(MAXIMIZED_BOTH);
-        setSize(settings.getDimension());
-        setLocation(settings.getLocation());
 
         LogWindow logWindow = createLogWindow();
         addWindow(logWindow);
@@ -53,6 +37,40 @@ public class MainApplicationFrame extends JFrame
         GameWindow gameWindow = new GameWindow();
         gameWindow.setSize(400,  400);
         addWindow(gameWindow);
+
+        if (file.exists()) {
+            try (ObjectInputStream stream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+                settings = (Settings) stream.readObject();
+                while (true) {
+                    try {
+                        Settings frameSettings = (Settings) stream.readObject();
+                        JInternalFrame[] frames = desktopPane.getAllFrames();
+                        for (JInternalFrame f : frames) {
+                            if (f.getTitle().equals(frameSettings.getTitle())){
+                                f.setIcon(frameSettings.isIconified());
+                                f.setMaximum(frameSettings.isMaximized());
+                                f.setLocation(frameSettings.getLocation());
+                                f.setSize(frameSettings.getDimension());
+                            }
+                        }
+                    }
+                    catch (EOFException e){
+                        break;
+                    }
+                }
+            }
+            catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
+        else settings = getMainFrameSettings();
+
+        if(settings.isIconified())
+            setExtendedState(ICONIFIED);
+        else if (settings.isMaximized())
+            setExtendedState(MAXIMIZED_BOTH);
+        setSize(settings.getDimension());
+        setLocation(settings.getLocation());
 
         setJMenuBar(generateMenuBar());
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -111,35 +129,6 @@ public class MainApplicationFrame extends JFrame
         frame.setVisible(true);
     }
     
-//    protected JMenuBar createMenuBar() {
-//        JMenuBar menuBar = new JMenuBar();
-// 
-//        //Set up the lone menu.
-//        JMenu menu = new JMenu("Document");
-//        menu.setMnemonic(KeyEvent.VK_D);
-//        menuBar.add(menu);
-// 
-//        //Set up the first menu item.
-//        JMenuItem menuItem = new JMenuItem("New");
-//        menuItem.setMnemonic(KeyEvent.VK_N);
-//        menuItem.setAccelerator(KeyStroke.getKeyStroke(
-//                KeyEvent.VK_N, ActionEvent.ALT_MASK));
-//        menuItem.setActionCommand("new");
-////        menuItem.addActionListener(this);
-//        menu.add(menuItem);
-// 
-//        //Set up the second menu item.
-//        menuItem = new JMenuItem("Quit");
-//        menuItem.setMnemonic(KeyEvent.VK_Q);
-//        menuItem.setAccelerator(KeyStroke.getKeyStroke(
-//                KeyEvent.VK_Q, ActionEvent.ALT_MASK));
-//        menuItem.setActionCommand("quit");
-////        menuItem.addActionListener(this);
-//        menu.add(menuItem);
-// 
-//        return menuBar;
-//    }
-    
     private JMenuBar generateMenuBar()
     {
         JMenuBar menuBar = new JMenuBar();
@@ -195,12 +184,16 @@ public class MainApplicationFrame extends JFrame
         if (reply == JOptionPane.YES_OPTION) {
             try (ObjectOutputStream stream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
                 stream.writeObject(settings);
-                stream.close();
-                System.exit(0);
+                JInternalFrame[] frames = desktopPane.getAllFrames();
+                for (JInternalFrame f : frames) {
+                    Settings frameSettings = new Settings(f.getTitle(), f.getSize(), f.getLocation(), f.isIcon(), f.isMaximum());
+                    stream.writeObject(frameSettings);
+                }
             }
             catch (Exception e) {
                 e.printStackTrace();
             }
+            System.exit(0);
         }
     }
     
