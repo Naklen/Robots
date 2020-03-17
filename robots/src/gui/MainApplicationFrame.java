@@ -1,8 +1,8 @@
 package gui;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 
 import javax.swing.*;
 
@@ -17,19 +17,36 @@ import log.Logger;
 public class MainApplicationFrame extends JFrame
 {
     private final JDesktopPane desktopPane = new JDesktopPane();
+    private Settings settings;
+    private File file = new File(System.getProperty("user.home") + "/robotsWindowSettings.txt");
     
     public MainApplicationFrame() {
         //Make the big window be indented 50 pixels from each edge
         //of the screen.
-        int inset = 50;        
+        int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset,
             screenSize.width  - inset*2,
             screenSize.height - inset*2);
 
+        if (file.exists()) {
+            try (ObjectInputStream stream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+                settings = (Settings) stream.readObject();
+            }
+            catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
+        else settings = getMainFrameSettings();
         setContentPane(desktopPane);
-        
-        
+
+        if(settings.isIconified())
+            setExtendedState(ICONIFIED);
+        else if (settings.isMaximized())
+            setExtendedState(MAXIMIZED_BOTH);
+        setSize(settings.getDimension());
+        setLocation(settings.getLocation());
+
         LogWindow logWindow = createLogWindow();
         addWindow(logWindow);
 
@@ -43,6 +60,36 @@ public class MainApplicationFrame extends JFrame
             @Override
             public void windowClosing(WindowEvent e) {
                 closeWindow();
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {
+                settings.setIconified(true);
+                System.out.println("Iconified");
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+                settings.setIconified(false);
+                if(settings.isMaximized())
+                    setExtendedState(MAXIMIZED_BOTH);
+                System.out.println("Deiconified");
+            }
+        });
+
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                settings.setDimension(e.getComponent().getSize());
+                if (getExtendedState() == JFrame.MAXIMIZED_BOTH)
+                    settings.setMaximized(true);
+                else
+                    settings.setMaximized(false);
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                settings.setLocation(e.getComponent().getLocation());
             }
         });
     }
@@ -127,20 +174,13 @@ public class MainApplicationFrame extends JFrame
         
         {
             JMenuItem addLogMessageItem = new JMenuItem("Сообщение в лог", KeyEvent.VK_S);
-            addLogMessageItem.addActionListener((event) -> {
-                Logger.debug("Новая строка");
-            });
+            addLogMessageItem.addActionListener((event) -> Logger.debug("Новая строка"));
             testMenu.add(addLogMessageItem);
         }
         JMenuItem exitButton = new JMenuItem("Закрыть приложение");
         UIManager.put("OptionPane.yesButtonText" , "Да" );
         UIManager.put("OptionPane.noButtonText" , "Нет" );
-        exitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                closeWindow();
-            }
-        });
+        exitButton.addActionListener(e -> closeWindow());
         JMenu exitMenu = new JMenu("Закрыть приложение");
         exitMenu.add(exitButton);
         menuBar.add(lookAndFeelMenu);
@@ -152,8 +192,16 @@ public class MainApplicationFrame extends JFrame
     private void closeWindow() {
         int reply = JOptionPane.showConfirmDialog(null,
                 "Вы действительно закрыть приложение?", "Закрыть", JOptionPane.YES_NO_OPTION);
-        if (reply == JOptionPane.YES_OPTION)
-            System.exit(0);
+        if (reply == JOptionPane.YES_OPTION) {
+            try (ObjectOutputStream stream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
+                stream.writeObject(settings);
+                stream.close();
+                System.exit(0);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
     
     private void setLookAndFeel(String className)
@@ -168,5 +216,9 @@ public class MainApplicationFrame extends JFrame
         {
             // just ignore
         }
+    }
+
+    private Settings getMainFrameSettings() {
+        return new Settings("Main", Toolkit.getDefaultToolkit().getScreenSize(), new Point(0,0), false, true);
     }
 }
