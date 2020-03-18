@@ -3,6 +3,8 @@ package gui;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import javax.swing.*;
 
@@ -41,18 +43,25 @@ public class MainApplicationFrame extends JFrame
         if (file.exists()) {
             try (ObjectInputStream stream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
                 settings = (Settings) stream.readObject();
+                JInternalFrame[] frames = desktopPane.getAllFrames();
+                HashSet<JInternalFrame> framesToClose = new HashSet<>();
+                for (JInternalFrame f : frames)
+                    framesToClose.add(f);
                 while (true) {
                     try {
                         Settings frameSettings = (Settings) stream.readObject();
-                        JInternalFrame[] frames = desktopPane.getAllFrames();
                         for (JInternalFrame f : frames) {
                             if (f.getTitle().equals(frameSettings.getTitle())){
                                 f.setIcon(frameSettings.isIconified());
                                 f.setMaximum(frameSettings.isMaximized());
                                 f.setLocation(frameSettings.getLocation());
                                 f.setSize(frameSettings.getDimension());
+                                framesToClose.remove(f);
                             }
                         }
+                        if (!framesToClose.isEmpty())
+                            for (JInternalFrame f : framesToClose)
+                                f.setClosed(true);
                     }
                     catch (EOFException e){
                         break;
