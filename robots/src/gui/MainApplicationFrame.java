@@ -3,11 +3,8 @@ package gui;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.Arrays;
 import java.util.HashSet;
-
 import javax.swing.*;
-
 import log.Logger;
 
 /**
@@ -44,29 +41,16 @@ public class MainApplicationFrame extends JFrame
             try (ObjectInputStream stream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
                 settings = (Settings) stream.readObject();
                 JInternalFrame[] frames = desktopPane.getAllFrames();
-                HashSet<JInternalFrame> framesToClose = new HashSet<>();
-                for (JInternalFrame f : frames)
-                    framesToClose.add(f);
-                while (true) {
-                    try {
-                        Settings frameSettings = (Settings) stream.readObject();
-                        for (JInternalFrame f : frames) {
-                            if (f.getTitle().equals(frameSettings.getTitle())){
-                                f.setIcon(frameSettings.isIconified());
-                                f.setMaximum(frameSettings.isMaximized());
-                                f.setLocation(frameSettings.getLocation());
-                                f.setSize(frameSettings.getDimension());
-                                framesToClose.remove(f);
-                            }
+                HashSet<Settings> framesSettings = (HashSet<Settings>) stream.readObject();
+                for (Settings fs : framesSettings)
+                    for (JInternalFrame f : frames) {
+                        if (f.getTitle().equals(fs.getTitle())){
+                            f.setIcon(fs.isIconified());
+                            f.setMaximum(fs.isMaximized());
+                            f.setLocation(fs.getLocation());
+                            f.setSize(fs.getDimension());
                         }
-                        if (!framesToClose.isEmpty())
-                            for (JInternalFrame f : framesToClose)
-                                f.setClosed(true);
                     }
-                    catch (EOFException e){
-                        break;
-                    }
-                }
             }
             catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -192,12 +176,14 @@ public class MainApplicationFrame extends JFrame
                 "Вы действительно закрыть приложение?", "Закрыть", JOptionPane.YES_NO_OPTION);
         if (reply == JOptionPane.YES_OPTION) {
             try (ObjectOutputStream stream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
+                HashSet<Settings> framesSettings = new HashSet<>();
                 stream.writeObject(settings);
                 JInternalFrame[] frames = desktopPane.getAllFrames();
                 for (JInternalFrame f : frames) {
                     Settings frameSettings = new Settings(f.getTitle(), f.getSize(), f.getLocation(), f.isIcon(), f.isMaximum());
-                    stream.writeObject(frameSettings);
+                    framesSettings.add(frameSettings);
                 }
+                stream.writeObject(framesSettings);
             }
             catch (Exception e) {
                 e.printStackTrace();
