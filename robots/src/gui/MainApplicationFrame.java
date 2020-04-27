@@ -176,8 +176,6 @@ public class MainApplicationFrame extends JFrame
             testMenu.add(addLogMessageItem);
         }
         JMenuItem exitButton = new JMenuItem("Закрыть приложение");
-        UIManager.put("OptionPane.yesButtonText" , "Да" );
-        UIManager.put("OptionPane.noButtonText" , "Нет" );
         exitButton.addActionListener(e -> closeWindow());
         JMenu exitMenu = new JMenu("Закрыть приложение");
         exitMenu.add(exitButton);
