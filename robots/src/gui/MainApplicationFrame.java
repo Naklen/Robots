@@ -2,8 +2,6 @@ package gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
-import java.util.HashSet;
 import javax.swing.*;
 import log.Logger;
 
@@ -13,7 +11,7 @@ import log.Logger;
  * Следует разделить его на серию более простых методов (или вообще выделить отдельный класс).
  *
  */
-public class MainApplicationFrame extends JFrame
+public class MainApplicationFrame extends JFrame implements ISaveable
 {
     private final JDesktopPane desktopPane = new JDesktopPane();
     private Settings settings = getMainFrameSettings();
@@ -29,21 +27,18 @@ public class MainApplicationFrame extends JFrame
 
         setContentPane(desktopPane);
 
+        SettingsSaver.addComponentToSave(this);
+
         LogWindow logWindow = createLogWindow();
         addWindow(logWindow);
+        SettingsSaver.addComponentToSave(logWindow);
 
         GameWindow gameWindow = new GameWindow();
         gameWindow.setSize(400,  400);
         addWindow(gameWindow);
+        SettingsSaver.addComponentToSave(gameWindow);
 
-        Saver.loadSettings(settings, desktopPane.getAllFrames());
-
-        if(settings.isIconified())
-            setExtendedState(ICONIFIED);
-        else if (settings.isMaximized())
-            setExtendedState(MAXIMIZED_BOTH);
-        setSize(settings.getDimension());
-        setLocation(settings.getLocation());
+        SettingsSaver.loadSettings();
 
         setJMenuBar(generateMenuBar());
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -155,7 +150,7 @@ public class MainApplicationFrame extends JFrame
         int reply = JOptionPane.showConfirmDialog(null,
                 "Вы действительно закрыть приложение?", "Закрыть", JOptionPane.YES_NO_OPTION);
         if (reply == JOptionPane.YES_OPTION) {
-            Saver.saveSettings(settings, desktopPane.getAllFrames());
+            SettingsSaver.saveSettings();
             System.exit(0);
         }
     }
@@ -176,5 +171,21 @@ public class MainApplicationFrame extends JFrame
 
     private static Settings getMainFrameSettings() {
         return new Settings("Main", Toolkit.getDefaultToolkit().getScreenSize(), new Point(0,0), false, true);
+    }
+
+    @Override
+    public void load(Settings settings) {
+        if(settings.isIconified())
+            setExtendedState(ICONIFIED);
+        else if (settings.isMaximized())
+            setExtendedState(MAXIMIZED_BOTH);
+        setSize(settings.getDimension());
+        setLocation(settings.getLocation());
+        this.settings = settings;
+    }
+
+    @Override
+    public Settings save() {
+        return settings;
     }
 }
