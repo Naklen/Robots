@@ -16,8 +16,7 @@ import log.Logger;
 public class MainApplicationFrame extends JFrame
 {
     private final JDesktopPane desktopPane = new JDesktopPane();
-    private Settings settings;
-    private File file = new File(System.getProperty("user.home") + "/robotsWindowSettings.txt");
+    private Settings settings = getMainFrameSettings();
     
     public MainApplicationFrame() {
         //Make the big window be indented 50 pixels from each edge
@@ -37,26 +36,7 @@ public class MainApplicationFrame extends JFrame
         gameWindow.setSize(400,  400);
         addWindow(gameWindow);
 
-        if (file.exists()) {
-            try (ObjectInputStream stream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-                settings = (Settings) stream.readObject();
-                JInternalFrame[] frames = desktopPane.getAllFrames();
-                HashSet<Settings> framesSettings = (HashSet<Settings>) stream.readObject();
-                for (Settings fs : framesSettings)
-                    for (JInternalFrame f : frames) {
-                        if (f.getTitle().equals(fs.getTitle())){
-                            f.setIcon(fs.isIconified());
-                            f.setMaximum(fs.isMaximized());
-                            f.setLocation(fs.getLocation());
-                            f.setSize(fs.getDimension());
-                        }
-                    }
-            }
-            catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
-        }
-        else settings = getMainFrameSettings();
+        Saver.loadSettings(settings, desktopPane.getAllFrames());
 
         if(settings.isIconified())
             setExtendedState(ICONIFIED);
@@ -175,19 +155,7 @@ public class MainApplicationFrame extends JFrame
         int reply = JOptionPane.showConfirmDialog(null,
                 "Вы действительно закрыть приложение?", "Закрыть", JOptionPane.YES_NO_OPTION);
         if (reply == JOptionPane.YES_OPTION) {
-            try (ObjectOutputStream stream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
-                HashSet<Settings> framesSettings = new HashSet<>();
-                stream.writeObject(settings);
-                JInternalFrame[] frames = desktopPane.getAllFrames();
-                for (JInternalFrame f : frames) {
-                    Settings frameSettings = new Settings(f.getTitle(), f.getSize(), f.getLocation(), f.isIcon(), f.isMaximum());
-                    framesSettings.add(frameSettings);
-                }
-                stream.writeObject(framesSettings);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+            Saver.saveSettings(settings, desktopPane.getAllFrames());
             System.exit(0);
         }
     }
@@ -206,7 +174,7 @@ public class MainApplicationFrame extends JFrame
         }
     }
 
-    private Settings getMainFrameSettings() {
+    private static Settings getMainFrameSettings() {
         return new Settings("Main", Toolkit.getDefaultToolkit().getScreenSize(), new Point(0,0), false, true);
     }
 }
