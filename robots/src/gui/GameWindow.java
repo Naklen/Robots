@@ -5,7 +5,7 @@ import java.awt.BorderLayout;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 
-public class GameWindow extends JInternalFrame implements ISaveable
+public class GameWindow extends SaveableJInternalFrame
 {
     private final GameVisualizer m_visualizer;
     public GameWindow() 
@@ -16,15 +16,5 @@ public class GameWindow extends JInternalFrame implements ISaveable
         panel.add(m_visualizer, BorderLayout.CENTER);
         getContentPane().add(panel);
         pack();
-    }
-
-    @Override
-    public void load(Settings settings) {
-        JInternalFrameSaveLoader.load(this, settings);
-    }
-
-    @Override
-    public Settings save() {
-        return JInternalFrameSaveLoader.save(this);
     }
 }

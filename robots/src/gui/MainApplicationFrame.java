@@ -11,14 +11,16 @@ import log.Logger;
  * Следует разделить его на серию более простых методов (или вообще выделить отдельный класс).
  *
  */
-public class MainApplicationFrame extends JFrame implements ISaveable
+public class MainApplicationFrame extends SaveableJFrame
 {
     private final JDesktopPane desktopPane = new JDesktopPane();
-    private Settings settings = getMainFrameSettings();
     
     public MainApplicationFrame() {
         //Make the big window be indented 50 pixels from each edge
         //of the screen.
+
+        settings = getMainFrameSettings();
+
         int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset,
@@ -27,55 +29,26 @@ public class MainApplicationFrame extends JFrame implements ISaveable
 
         setContentPane(desktopPane);
 
-        SettingsSaver.addComponentToSave(this);
+        SettingsStorage.addComponentInStorage(this);
 
         LogWindow logWindow = createLogWindow();
         addWindow(logWindow);
-        SettingsSaver.addComponentToSave(logWindow);
+        SettingsStorage.addComponentInStorage(logWindow);
 
         GameWindow gameWindow = new GameWindow();
         gameWindow.setSize(400,  400);
         addWindow(gameWindow);
-        SettingsSaver.addComponentToSave(gameWindow);
+        SettingsStorage.addComponentInStorage(gameWindow);
 
-        SettingsSaver.loadSettings();
+        SettingsStorage.loadSettings();
 
         setJMenuBar(generateMenuBar());
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 closeWindow();
-            }
-
-            @Override
-            public void windowIconified(WindowEvent e) {
-                settings.setIconified(true);
-                System.out.println("Iconified");
-            }
-
-            @Override
-            public void windowDeiconified(WindowEvent e) {
-                settings.setIconified(false);
-                if(settings.isMaximized())
-                    setExtendedState(MAXIMIZED_BOTH);
-                System.out.println("Deiconified");
-            }
-        });
-
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                settings.setDimension(e.getComponent().getSize());
-                if (getExtendedState() == JFrame.MAXIMIZED_BOTH)
-                    settings.setMaximized(true);
-                else
-                    settings.setMaximized(false);
-            }
-
-            @Override
-            public void componentMoved(ComponentEvent e) {
-                settings.setLocation(e.getComponent().getLocation());
             }
         });
     }
@@ -150,7 +123,7 @@ public class MainApplicationFrame extends JFrame implements ISaveable
         int reply = JOptionPane.showConfirmDialog(null,
                 "Вы действительно закрыть приложение?", "Закрыть", JOptionPane.YES_NO_OPTION);
         if (reply == JOptionPane.YES_OPTION) {
-            SettingsSaver.saveSettings();
+            SettingsStorage.saveSettings();
             System.exit(0);
         }
     }
@@ -171,21 +144,5 @@ public class MainApplicationFrame extends JFrame implements ISaveable
 
     private static Settings getMainFrameSettings() {
         return new Settings("Main", Toolkit.getDefaultToolkit().getScreenSize(), new Point(0,0), false, true);
-    }
-
-    @Override
-    public void load(Settings settings) {
-        if(settings.isIconified())
-            setExtendedState(ICONIFIED);
-        else if (settings.isMaximized())
-            setExtendedState(MAXIMIZED_BOTH);
-        setSize(settings.getDimension());
-        setLocation(settings.getLocation());
-        this.settings = settings;
-    }
-
-    @Override
-    public Settings save() {
-        return settings;
     }
 }

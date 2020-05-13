@@ -11,7 +11,7 @@ import log.LogChangeListener;
 import log.LogEntry;
 import log.LogWindowSource;
 
-public class LogWindow extends JInternalFrame implements LogChangeListener, ISaveable
+public class LogWindow extends SaveableJInternalFrame implements LogChangeListener
 {
     private LogWindowSource m_logSource;
     private TextArea m_logContent;
@@ -46,15 +46,5 @@ public class LogWindow extends JInternalFrame implements LogChangeListener, ISav
     public void onLogChanged()
     {
         EventQueue.invokeLater(this::updateLogContent);
-    }
-
-    @Override
-    public void load(Settings settings) {
-        JInternalFrameSaveLoader.load(this, settings);
-    }
-
-    @Override
-    public Settings save() {
-        return JInternalFrameSaveLoader.save(this);
     }
 }

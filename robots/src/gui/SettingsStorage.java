@@ -5,16 +5,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class SettingsSaver {
+public class SettingsStorage {
 
     private static File file = new File(System.getProperty("user.home") + "/robotsWindowSettings");
-    private static List<ISaveable> componentsToSave = new ArrayList<>();
+    private static List<ISaveable> saveableComponents = new ArrayList<>();
 
     public static void saveSettings() {
         try (ObjectOutputStream stream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
             HashMap<String, Settings> componentsSettings = new HashMap<>();
-            for (ISaveable c : componentsToSave)
-                componentsSettings.put(c.getTitle(), c.save());
+            for (ISaveable c : saveableComponents)
+                componentsSettings.put(c.getTitle(), c.getSettings());
             stream.writeObject(componentsSettings);
         }
         catch (Exception e) {
@@ -26,7 +26,7 @@ public class SettingsSaver {
         if (file.exists()) {
             try (ObjectInputStream stream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
                 HashMap<String, Settings> componentsSettings = (HashMap<String, Settings>) stream.readObject();
-                for (ISaveable c : componentsToSave)
+                for (ISaveable c : saveableComponents)
                     c.load(componentsSettings.get(c.getTitle()));
             }
             catch (Exception e) {
@@ -35,7 +35,7 @@ public class SettingsSaver {
         }
     }
 
-    public static void addComponentToSave(ISaveable component) {
-        componentsToSave.add(component);
+    public static void addComponentInStorage(ISaveable component) {
+        saveableComponents.add(component);
     }
 }
