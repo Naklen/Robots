@@ -3,6 +3,7 @@ package gui;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import gui.game.GameWindow;
 import gui.settingsSaver.SaveableJFrame;
 import gui.settingsSaver.Settings;
 import gui.settingsSaver.SettingsStorage;

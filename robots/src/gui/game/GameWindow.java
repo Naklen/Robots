@@ -1,4 +1,4 @@
-package gui;
+package gui.game;
 
 import gui.settingsSaver.SaveableJInternalFrame;
 import java.awt.BorderLayout;
