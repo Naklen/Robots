@@ -1,4 +1,4 @@
-package gui;
+package gui.settingsSaver;
 
 public interface ISaveable {
     void load(Settings settings);

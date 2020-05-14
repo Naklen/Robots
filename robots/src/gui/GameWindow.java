@@ -1,8 +1,7 @@
 package gui;
 
+import gui.settingsSaver.SaveableJInternalFrame;
 import java.awt.BorderLayout;
-
-import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 
 public class GameWindow extends SaveableJInternalFrame

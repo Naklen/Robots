@@ -3,10 +3,8 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.TextArea;
-
-import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
-
+import gui.settingsSaver.SaveableJInternalFrame;
 import log.LogChangeListener;
 import log.LogEntry;
 import log.LogWindowSource;

@@ -1,4 +1,4 @@
-package gui;
+package gui.settingsSaver;
 
 import java.awt.*;
 import java.io.Serializable;

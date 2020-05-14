@@ -1,4 +1,4 @@
-package gui;
+package gui.settingsSaver;
 
 import javax.swing.*;
 import java.awt.event.ComponentAdapter;
