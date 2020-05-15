@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import gui.game.GameWindow;
+import gui.game.RobotCoordinatesWindow;
+import gui.game.RobotModel;
 import gui.settingsSaver.SaveableJFrame;
 import gui.settingsSaver.Settings;
 import gui.settingsSaver.SettingsStorage;
@@ -18,6 +20,7 @@ import log.Logger;
 public class MainApplicationFrame extends SaveableJFrame
 {
     private final JDesktopPane desktopPane = new JDesktopPane();
+    private final RobotModel robotModel = new RobotModel();
     
     public MainApplicationFrame() {
         //Make the big window be indented 50 pixels from each edge
@@ -39,10 +42,14 @@ public class MainApplicationFrame extends SaveableJFrame
         addWindow(logWindow);
         SettingsStorage.addComponentInStorage(logWindow);
 
-        GameWindow gameWindow = new GameWindow();
+        GameWindow gameWindow = new GameWindow(robotModel);
         gameWindow.setSize(400,  400);
         addWindow(gameWindow);
         SettingsStorage.addComponentInStorage(gameWindow);
+
+        RobotCoordinatesWindow rcw = new RobotCoordinatesWindow(robotModel);
+        addWindow(rcw);
+        SettingsStorage.addComponentInStorage(rcw);
 
         SettingsStorage.loadSettings();
 

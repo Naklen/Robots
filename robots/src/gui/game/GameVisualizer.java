@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 public class GameVisualizer extends JPanel
 {
     private final Timer m_timer = initTimer();
-    private final RobotModel model = new RobotModel();
+    private final RobotModel model;
     
     private static Timer initTimer() 
     {
@@ -23,8 +23,9 @@ public class GameVisualizer extends JPanel
         return timer;
     }
     
-    public GameVisualizer() 
+    public GameVisualizer(RobotModel robotModel)
     {
+        model = robotModel;
         m_timer.schedule(new TimerTask()
         {
             @Override
