@@ -13,7 +13,7 @@ public class RobotModel extends Observable {
     private volatile int m_targetPositionY = 100;
 
     private static final double maxVelocity = 0.1;
-    private static final double maxAngularVelocity = 0.001;
+    private static final double maxAngularVelocity = 0.005;
 
     public double getRobotPositionX() {
         return m_robotPositionX;
@@ -67,11 +67,11 @@ public class RobotModel extends Observable {
         double velocity = maxVelocity;
         double angleToTarget = angleTo(m_robotPositionX, m_robotPositionY, m_targetPositionX, m_targetPositionY);
         double angularVelocity = 0;
-        if (angleToTarget > m_robotDirection)
+        if (asNormalizedRadians(angleToTarget - m_robotDirection) < Math.PI)
         {
             angularVelocity = maxAngularVelocity;
         }
-        if (angleToTarget < m_robotDirection)
+        if (asNormalizedRadians(angleToTarget - m_robotDirection) > Math.PI)
         {
             angularVelocity = -maxAngularVelocity;
         }
